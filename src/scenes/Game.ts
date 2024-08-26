@@ -28,6 +28,14 @@ export class Game extends Scene
         this.msg_text.setOrigin(0.5);
         */
 
+        const map = this.make.tilemap({key:"dungeon"});
+        const tileset = map.addTilesetImage("dungeon","tiles");
+
+        if(tileset != null){
+            map.createLayer("Ground",tileset);
+            map.createLayer("Walls",tileset)?.setCollisionByProperty({collides: true});
+        }
+
         this.input.once('pointerdown', () => {
 
             this.scene.start('GameOver');
