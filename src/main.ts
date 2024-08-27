@@ -12,6 +12,13 @@ const config: Types.Core.GameConfig = {
     type: Phaser.AUTO,
     width: 640,
     height: 360,
+    physics: {
+        default: 'arcade', // Aktiviert die Arcade-Physik
+        arcade: {
+            gravity: { x: 0,y: 0 }, // Optional: Schwerkraft einstellen
+            debug: true
+        }
+    },
     parent: 'game-container',
     backgroundColor: '#028af8',
     scale: {
