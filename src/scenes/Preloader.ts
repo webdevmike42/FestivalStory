@@ -39,6 +39,7 @@ export class Preloader extends Scene
         this.load.tilemapTiledJSON("dungeon","tiles/dungeon-01.json");
 
         this.load.atlas("faune", "characters/faune/faune.png", "characters/faune/faune.json");
+        this.load.atlas("lizard", "enemies/lizard/lizard.png", "enemies/lizard/lizard.json");
     }
 
     create ()

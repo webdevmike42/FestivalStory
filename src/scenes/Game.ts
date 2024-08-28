@@ -1,5 +1,8 @@
 import { Scene } from 'phaser';
 import { debugDraw } from '../utils/debug';
+import { createLizardAnims } from '../anims/EnemyAnims';
+import { createCharacterAnims } from '../anims/CharacterAnims';
+import Lizard from './enemies/lizard';
 
 
 export class Game extends Scene {
@@ -19,6 +22,9 @@ export class Game extends Scene {
     }
 
     create() {
+        createLizardAnims(this.anims);
+        createCharacterAnims(this.anims);
+
         this.camera = this.cameras.main;
         this.camera.setBackgroundColor(0x00ff00);
 
@@ -28,63 +34,33 @@ export class Game extends Scene {
         const map = this.make.tilemap({ key: "dungeon" });
         const tileset = map.addTilesetImage("dungeon", "tiles");
 
-        if(tileset !== null ){
+        if (tileset !== null) {
             map.createLayer("Ground", tileset);
-            const wallsLayer : Phaser.Tilemaps.TilemapLayer | null = map.createLayer("Walls", tileset);
-            
-            if(wallsLayer !== null){
+            const wallsLayer: Phaser.Tilemaps.TilemapLayer | null = map.createLayer("Walls", tileset);
+
+            if (wallsLayer !== null) {
                 wallsLayer.setCollisionByProperty({ collides: true });
 
-                debugDraw(wallsLayer,this);
+                debugDraw(wallsLayer, this);
 
                 this.faune = this.physics.add.sprite(128, 128, "faune", "walk-side-3.png");
-                this.faune.setSize(16,32);
+                this.faune.setSize(16, 32);
                 this.physics.add.collider(this.faune, wallsLayer);
+
+                const lizards = this.physics.add.group({
+                    classType: Lizard,
+                    createCallback: (go) => {
+                        const lizGo = go as Lizard;
+                        if(lizGo.body)
+                            lizGo.body.onCollide = true;
+                    }
+                })
+
+                lizards.get(256,128, "lizard");
+                
+                this.physics.add.collider(lizards, wallsLayer);
             }
         }
-
-        this.faune.anims.create({
-            key: 'faune-idle-down',
-            frames: [{ key: 'faune', frame: 'walk-down-3.png' }]
-        })
-
-        this.faune.anims.create({
-            key: 'faune-idle-up',
-            frames: [{ key: 'faune', frame: 'walk-up-3.png' }]
-        })
-
-        this.faune.anims.create({
-            key: 'faune-idle-side',
-            frames: [{ key: 'faune', frame: 'walk-side-3.png' }]
-        })
-
-        this.faune.anims.create({
-            key: 'faune-walk-down',
-            frames: this.faune.anims.generateFrameNames('faune', { start: 1, end: 8, prefix: 'walk-down-', suffix: '.png' }),
-            repeat: -1,
-            frameRate: 15
-        })
-
-        this.faune.anims.create({
-            key: 'faune-walk-up',
-            frames: this.faune.anims.generateFrameNames('faune', { start: 1, end: 8, prefix: 'walk-up-', suffix: '.png' }),
-            repeat: -1,
-            frameRate: 15
-        })
-
-        this.faune.anims.create({
-            key: 'faune-walk-side',
-            frames: this.faune.anims.generateFrameNames('faune', { start: 1, end: 8, prefix: 'walk-side-', suffix: '.png' }),
-            repeat: -1,
-            frameRate: 15
-        })
-
-        this.faune.anims.create({
-            key: 'faune-faint',
-            frames: this.faune.anims.generateFrameNames('faune', { start: 1, end: 4, prefix: 'faint-', suffix: '.png' }),
-            frameRate: 15
-        })
-
 
         this.faune.anims.play("faune-idle-down");
 
