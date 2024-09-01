@@ -6,6 +6,7 @@ import Lizard from './enemies/Lizard';
 import '../characters/Faune';
 import Faune from '../characters/Faune';
 import StateMachine from '../stateMachine/StateMachine';
+import { sceneEvents } from '../events/EventCenter';
 
 export class Game extends Scene {
     camera: Phaser.Cameras.Scene2D.Camera;
@@ -13,6 +14,7 @@ export class Game extends Scene {
     msg_text: Phaser.GameObjects.Text;
     private cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
     private faune!: Faune;
+    private playerLizardsCollider: Phaser.Physics.Arcade.Collider;
 
     constructor() {
         super('Game');
@@ -24,14 +26,13 @@ export class Game extends Scene {
     }
 
     create() {
+        this.scene.run("game-ui");
+
         createLizardAnims(this.anims);
         createCharacterAnims(this.anims);
 
         this.camera = this.cameras.main;
-        this.camera.setBackgroundColor(0x00ff00);
-
-        this.background = this.add.image(512, 384, 'background');
-        this.background.setAlpha(0.5);
+        this.camera.setBackgroundColor(0x000000);        
 
         const map = this.make.tilemap({ key: "dungeon" });
         const tileset = map.addTilesetImage("dungeon", "tiles");
@@ -43,7 +44,7 @@ export class Game extends Scene {
             if (wallsLayer !== null) {
                 wallsLayer.setCollisionByProperty({ collides: true });
 
-                debugDraw(wallsLayer, this);
+                //debugDraw(wallsLayer, this);
 
 
                 this.faune = this.add.faune(128, 128, "faune", "walk-side-3.png")
@@ -63,18 +64,17 @@ export class Game extends Scene {
 
                 this.physics.add.collider(lizards, wallsLayer);
 
-                this.physics.add.collider(lizards, this.faune, this.handlePlayerLizardCollision, undefined, this);
+                this.playerLizardsCollider = this.physics.add.collider(lizards, this.faune, this.handlePlayerLizardCollision, undefined, this);
+
+                /*
+                const knives = this.add.group({
+                    classType: Phaser.Physics.Arcade.Image
+                });*/
             }
         }
 
         this.camera.startFollow(this.faune, true);
-
-        this.input.once('pointerdown', () => {
-
-            this.scene.start('GameOver');
-
-        });
-
+/*
         type PlayerState = 'Idle' | 'Running' | 'Jumping';
         const playerStateMachine = new StateMachine<PlayerState>("Idle");
 
@@ -96,7 +96,7 @@ export class Game extends Scene {
         playerStateMachine.transition("Idle");
         playerStateMachine.transition("Idle");
         
-        
+        */
     }
 
     private handlePlayerLizardCollision(obj1: any, obj2: any) {
@@ -109,6 +109,10 @@ export class Game extends Scene {
 
         this.faune.setVelocity(dir.x, dir.y);
         this.faune.handleDamage(dir);
+        sceneEvents.emit("player-health-changed", this.faune.health)    //todo: put events in enum in separat file
+
+        if(this.faune.health <= 0)
+            this.playerLizardsCollider.destroy();
     }
 
     update(t: number, dt: number) {

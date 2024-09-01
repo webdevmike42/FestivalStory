@@ -1,7 +1,6 @@
 import { Boot } from './scenes/Boot';
 import { Game as MainGame } from './scenes/Game';
-import { GameOver } from './scenes/GameOver';
-import { MainMenu } from './scenes/MainMenu';
+import GameUI from './scenes/GameUI';
 import { Preloader } from './scenes/Preloader';
 
 import { Game, Types } from "phaser";
@@ -28,9 +27,8 @@ const config: Types.Core.GameConfig = {
     scene: [
         Boot,
         Preloader,
-        MainMenu,
         MainGame,
-        GameOver
+        GameUI
     ]
 };
 
