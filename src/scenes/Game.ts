@@ -15,6 +15,8 @@ export class Game extends Scene {
     private cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
     private faune!: Faune;
     private playerLizardsCollider: Phaser.Physics.Arcade.Collider;
+    private knives!: Phaser.Physics.Arcade.Group;
+    private lizards!: Phaser.Physics.Arcade.Group;
 
     constructor() {
         super('Game');
@@ -32,7 +34,7 @@ export class Game extends Scene {
         createCharacterAnims(this.anims);
 
         this.camera = this.cameras.main;
-        this.camera.setBackgroundColor(0x000000);        
+        this.camera.setBackgroundColor(0x000000);
 
         const map = this.make.tilemap({ key: "dungeon" });
         const tileset = map.addTilesetImage("dungeon", "tiles");
@@ -51,7 +53,7 @@ export class Game extends Scene {
 
                 this.physics.add.collider(this.faune, wallsLayer);
 
-                const lizards = this.physics.add.group({
+                this.lizards = this.physics.add.group({
                     classType: Lizard,
                     createCallback: (go) => {
                         const lizGo = go as Lizard;
@@ -60,43 +62,56 @@ export class Game extends Scene {
                     }
                 })
 
-                lizards.get(256, 128, "lizard");
+                this.lizards.get(256, 128, "lizard");
 
-                this.physics.add.collider(lizards, wallsLayer);
+                this.physics.add.collider(this.lizards, wallsLayer);
 
-                this.playerLizardsCollider = this.physics.add.collider(lizards, this.faune, this.handlePlayerLizardCollision, undefined, this);
+                this.playerLizardsCollider = this.physics.add.collider(this.lizards, this.faune, this.handlePlayerLizardCollision, undefined, this);
 
-                /*
-                const knives = this.add.group({
+                this.knives = this.physics.add.group({
                     classType: Phaser.Physics.Arcade.Image
-                });*/
+                });
+
+                this.physics.add.collider(this.knives, wallsLayer, this.handleKnifeWallCollision, undefined, this);
+                this.physics.add.collider(this.knives, this.lizards, this.handleKnifeLizardCollision, undefined, this);
+
+                this.faune.setKnives(this.knives);
             }
         }
 
         this.camera.startFollow(this.faune, true);
-/*
-        type PlayerState = 'Idle' | 'Running' | 'Jumping';
-        const playerStateMachine = new StateMachine<PlayerState>("Idle");
-
-        playerStateMachine.addState('Idle', {
-            enter: () => console.log('Player enters Idle state'),
-            exit: () => console.log('Player exits Idle state'),
-            update: () => console.log('Player is Idle'),
-        });
-
-        playerStateMachine.addState('Jumping', {
-            enter: () => console.log('Player enters Jumping state'),
-            exit: () => console.log('Player exits Jumping state'),
-            update: () => console.log('Player is Jumping'),
-        });
-
-        playerStateMachine.transition("Idle");
-        playerStateMachine.transition("Running");
-        playerStateMachine.transition("Jumping");
-        playerStateMachine.transition("Idle");
-        playerStateMachine.transition("Idle");
+        /*
+                type PlayerState = 'Idle' | 'Running' | 'Jumping';
+                const playerStateMachine = new StateMachine<PlayerState>("Idle");
         
-        */
+                playerStateMachine.addState('Idle', {
+                    enter: () => console.log('Player enters Idle state'),
+                    exit: () => console.log('Player exits Idle state'),
+                    update: () => console.log('Player is Idle'),
+                });
+        
+                playerStateMachine.addState('Jumping', {
+                    enter: () => console.log('Player enters Jumping state'),
+                    exit: () => console.log('Player exits Jumping state'),
+                    update: () => console.log('Player is Jumping'),
+                });
+        
+                playerStateMachine.transition("Idle");
+                playerStateMachine.transition("Running");
+                playerStateMachine.transition("Jumping");
+                playerStateMachine.transition("Idle");
+                playerStateMachine.transition("Idle");
+                
+                */
+    }
+
+    private handleKnifeLizardCollision(obj1: any, obj2: any) {
+        this.knives.killAndHide(obj1);
+        this.lizards.killAndHide(obj2);
+    }
+
+    private handleKnifeWallCollision(obj1: any, obj2: any) {
+        this.knives.killAndHide(obj1);
     }
 
     private handlePlayerLizardCollision(obj1: any, obj2: any) {
@@ -111,7 +126,7 @@ export class Game extends Scene {
         this.faune.handleDamage(dir);
         sceneEvents.emit("player-health-changed", this.faune.health)    //todo: put events in enum in separat file
 
-        if(this.faune.health <= 0)
+        if (this.faune.health <= 0)
             this.playerLizardsCollider.destroy();
     }
 

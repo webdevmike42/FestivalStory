@@ -15,7 +15,7 @@ const config: Types.Core.GameConfig = {
         default: 'arcade', // Aktiviert die Arcade-Physik
         arcade: {
             gravity: { x: 0,y: 0 }, // Optional: Schwerkraft einstellen
-            debug: true
+            debug: false
         }
     },
     parent: 'game-container',

@@ -43,6 +43,8 @@ export class Preloader extends Scene
 
         this.load.image("ui-heart-empty","ui/ui_heart_empty.png");
         this.load.image("ui-heart-full","ui/ui_heart_full.png");
+
+        this.load.image("knife", "weapons/weapon_knife.png");
     }
 
     create ()

@@ -17,11 +17,16 @@ export default class Faune extends Phaser.Physics.Arcade.Sprite {
     private healthState = HealthStates.IDLE;
     private damageTime = 0;
     private _health = 3;
+    private knives: Phaser.Physics.Arcade.Group;
 
     constructor(scene: Phaser.Scene, x: number, y: number, texture: string, frame?: string | number) {
         super(scene, x, y, texture, frame);
 
         this.anims.play("faune-idle-down");
+    }
+
+    setKnives(knives: Phaser.Physics.Arcade.Group) {
+        this.knives = knives;
     }
 
     get health() {
@@ -38,12 +43,45 @@ export default class Faune extends Phaser.Physics.Arcade.Sprite {
         this.healthState = HealthStates.DAMAGE;
         this.damageTime = 0;
         this._health--;
-        if(this.health <= 0){
+        if (this.health <= 0) {
             this.healthState = HealthStates.DEAD;
             this.anims.play("faune-faint");
-            this.setVelocity(0,0);
+            this.setVelocity(0, 0);
             this.clearTint();
         }
+    }
+
+    private throwKnife() {
+        if (!this.knives)
+            return;
+        const parts: string[] = this.anims.currentAnim?.key.split('-') || [];
+        const direction = parts[2];
+        const vec = new Phaser.Math.Vector2(0, 0);
+
+        switch (direction) {
+            case "up":
+                vec.y = -1;
+                break;
+            case "down":
+                vec.y = 1;
+                break;
+            default:
+            case "side":
+                if (this.scaleX < 0)
+                    vec.x = -1;
+                else
+                    vec.x = 1;
+                break;
+        }
+
+        const angle = vec.angle();
+        const knife = this.knives.get(this.x, this.y, "knife") as Phaser.Physics.Arcade.Image;
+        knife.setActive(true);
+        knife.setVisible(true);
+        knife.x += vec.x * 16;
+        knife.y += vec.y * 16;
+        knife.setRotation(angle);
+        knife.setVelocity(vec.x * 300, vec.y * 300);
     }
 
     preUpdate(t: number, dt: number) {
@@ -67,6 +105,10 @@ export default class Faune extends Phaser.Physics.Arcade.Sprite {
     update(cursors: Phaser.Types.Input.Keyboard.CursorKeys) {
         if (!cursors || this.healthState === HealthStates.DAMAGE || this.healthState === HealthStates.DEAD)
             return;
+
+        if (Phaser.Input.Keyboard.JustDown(cursors.space!)) {
+            this.throwKnife();
+        }
 
         const speed: number = 100;
         let vx = 0;
