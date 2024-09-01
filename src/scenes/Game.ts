@@ -5,6 +5,7 @@ import { createCharacterAnims } from '../anims/CharacterAnims';
 import Lizard from './enemies/Lizard';
 import '../characters/Faune';
 import Faune from '../characters/Faune';
+import StateMachine from '../stateMachine/StateMachine';
 
 export class Game extends Scene {
     camera: Phaser.Cameras.Scene2D.Camera;
@@ -44,9 +45,9 @@ export class Game extends Scene {
 
                 debugDraw(wallsLayer, this);
 
-                
-                this.faune = this.add.faune(128,128,"faune", "walk-side-3.png")
-                
+
+                this.faune = this.add.faune(128, 128, "faune", "walk-side-3.png")
+
                 this.physics.add.collider(this.faune, wallsLayer);
 
                 const lizards = this.physics.add.group({
@@ -59,7 +60,7 @@ export class Game extends Scene {
                 })
 
                 lizards.get(256, 128, "lizard");
-                
+
                 this.physics.add.collider(lizards, wallsLayer);
 
                 this.physics.add.collider(lizards, this.faune, this.handlePlayerLizardCollision, undefined, this);
@@ -73,6 +74,29 @@ export class Game extends Scene {
             this.scene.start('GameOver');
 
         });
+
+        type PlayerState = 'Idle' | 'Running' | 'Jumping';
+        const playerStateMachine = new StateMachine<PlayerState>("Idle");
+
+        playerStateMachine.addState('Idle', {
+            enter: () => console.log('Player enters Idle state'),
+            exit: () => console.log('Player exits Idle state'),
+            update: () => console.log('Player is Idle'),
+        });
+
+        playerStateMachine.addState('Jumping', {
+            enter: () => console.log('Player enters Jumping state'),
+            exit: () => console.log('Player exits Jumping state'),
+            update: () => console.log('Player is Jumping'),
+        });
+
+        playerStateMachine.transition("Idle");
+        playerStateMachine.transition("Running");
+        playerStateMachine.transition("Jumping");
+        playerStateMachine.transition("Idle");
+        playerStateMachine.transition("Idle");
+        
+        
     }
 
     private handlePlayerLizardCollision(obj1: any, obj2: any) {
