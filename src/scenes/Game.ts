@@ -40,7 +40,7 @@ export class Game extends Scene {
         this.camera.setBackgroundColor(0x000000);
 
         const map = this.make.tilemap({ key: "dungeon" });
-        const tileset = map.addTilesetImage("dungeon", "tiles");
+        const tileset = map.addTilesetImage("dungeon", "tiles", 16, 16, 1, 2);
 
         if (tileset !== null) {
             map.createLayer("Ground", tileset);
