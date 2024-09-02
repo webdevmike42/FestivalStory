@@ -40,11 +40,13 @@ export class Preloader extends Scene
 
         this.load.atlas("faune", "characters/faune/faune.png", "characters/faune/faune.json");
         this.load.atlas("lizard", "enemies/lizard/lizard.png", "enemies/lizard/lizard.json");
+        this.load.atlas("treasure", "items/treasure.png", "items/treasure.json");
 
         this.load.image("ui-heart-empty","ui/ui_heart_empty.png");
         this.load.image("ui-heart-full","ui/ui_heart_full.png");
 
         this.load.image("knife", "weapons/weapon_knife.png");
+        
     }
 
     create ()

@@ -1,4 +1,7 @@
 import Phaser from "phaser";
+import Chest from "../items/Chest";
+import { sceneEvents } from "../events/EventCenter";
+
 declare global {
     namespace Phaser.GameObjects {
         interface GameObjectFactory {
@@ -17,7 +20,10 @@ export default class Faune extends Phaser.Physics.Arcade.Sprite {
     private healthState = HealthStates.IDLE;
     private damageTime = 0;
     private _health = 3;
+    private _coins = 3;
     private knives: Phaser.Physics.Arcade.Group;
+    private activeChest: Chest | undefined;
+
 
     constructor(scene: Phaser.Scene, x: number, y: number, texture: string, frame?: string | number) {
         super(scene, x, y, texture, frame);
@@ -29,8 +35,15 @@ export default class Faune extends Phaser.Physics.Arcade.Sprite {
         this.knives = knives;
     }
 
+    setChest(chest: Chest) {
+        this.activeChest = chest;
+    }
+
     get health() {
         return this._health;
+    }
+    get coins() {
+        return this._coins;
     }
 
     handleDamage(dir: Phaser.Math.Vector2) {
@@ -107,12 +120,24 @@ export default class Faune extends Phaser.Physics.Arcade.Sprite {
             return;
 
         if (Phaser.Input.Keyboard.JustDown(cursors.space!)) {
-            this.throwKnife();
+            
+            if (this.activeChest && this.activeChest instanceof Chest) {
+                this._coins += this.activeChest.open();
+                sceneEvents.emit("player-coins-changed",this._coins);
+            }
+                
+            else
+                this.throwKnife();
+            return;
         }
 
         const speed: number = 100;
         let vx = 0;
         let vy = 0;
+
+        if(cursors.left.isDown || cursors.right.isDown || cursors.up.isDown || cursors.down.isDown){
+            this.activeChest = undefined;
+        }
 
         if (cursors.left?.isDown) {
             vx = -speed;

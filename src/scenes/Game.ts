@@ -7,6 +7,8 @@ import '../characters/Faune';
 import Faune from '../characters/Faune';
 import StateMachine from '../stateMachine/StateMachine';
 import { sceneEvents } from '../events/EventCenter';
+import { createChestAnims } from '../anims/TreasureAnims';
+import Chest from '../items/Chest';
 
 export class Game extends Scene {
     camera: Phaser.Cameras.Scene2D.Camera;
@@ -32,6 +34,7 @@ export class Game extends Scene {
 
         createLizardAnims(this.anims);
         createCharacterAnims(this.anims);
+        createChestAnims(this.anims);
 
         this.camera = this.cameras.main;
         this.camera.setBackgroundColor(0x000000);
@@ -42,6 +45,18 @@ export class Game extends Scene {
         if (tileset !== null) {
             map.createLayer("Ground", tileset);
             const wallsLayer: Phaser.Tilemaps.TilemapLayer | null = map.createLayer("Walls", tileset);
+
+            const chests = this.physics.add.staticGroup({
+                classType: Chest
+            })
+
+            const chestLayer: Phaser.Tilemaps.ObjectLayer | null = map.getObjectLayer("Chests");
+            chestLayer?.objects.forEach(chestObj => {
+                if (chestObj) {
+                    // correct x and y because origin is in the middle of the object
+                    chests.get(chestObj.x! + chestObj.width! * 0.5, chestObj.y! - chestObj.height! * 0.5, "treasure");
+                }
+            })
 
             if (wallsLayer !== null) {
                 wallsLayer.setCollisionByProperty({ collides: true });
@@ -74,6 +89,9 @@ export class Game extends Scene {
 
                 this.physics.add.collider(this.knives, wallsLayer, this.handleKnifeWallCollision, undefined, this);
                 this.physics.add.collider(this.knives, this.lizards, this.handleKnifeLizardCollision, undefined, this);
+                this.physics.add.collider(this.knives, chests, this.handleKnifeWallCollision, undefined, this);
+
+                this.physics.add.collider(this.faune, chests, this.handlePlayerChestCollision, undefined, this);
 
                 this.faune.setKnives(this.knives);
             }
@@ -103,6 +121,11 @@ export class Game extends Scene {
                 playerStateMachine.transition("Idle");
                 
                 */
+    }
+
+    private handlePlayerChestCollision(obj1: any, obj2: any) {
+        const chest = obj2 as Chest;
+        this.faune.setChest(chest);
     }
 
     private handleKnifeLizardCollision(obj1: any, obj2: any) {
