@@ -56,35 +56,43 @@ export class Game extends Scene {
                     // correct x and y because origin is in the middle of the object
                     chests.get(chestObj.x! + chestObj.width! * 0.5, chestObj.y! - chestObj.height! * 0.5, "treasure");
                 }
+            });
+
+
+            this.lizards = this.physics.add.group({
+                classType: Lizard,
+                createCallback: (go) => {
+                    const lizGo = go as Lizard;
+                    if (lizGo.body)
+                        lizGo.body.onCollide = true;
+                }
             })
+
+
+            const lizardLayer: Phaser.Tilemaps.ObjectLayer | null = map.getObjectLayer("Lizards");
+            lizardLayer?.objects.forEach(lizObj => {
+                if (lizObj) {
+                    // correct x and y because origin is in the middle of the object
+                    this.lizards.get(lizObj.x! + lizObj.width! * 0.5, lizObj.y! - lizObj.height! * 0.5, "lizard");
+                }
+            });
 
             if (wallsLayer !== null) {
                 wallsLayer.setCollisionByProperty({ collides: true });
 
                 //debugDraw(wallsLayer, this);
 
-
                 this.faune = this.add.faune(128, 128, "faune", "walk-side-3.png")
 
                 this.physics.add.collider(this.faune, wallsLayer);
-
-                this.lizards = this.physics.add.group({
-                    classType: Lizard,
-                    createCallback: (go) => {
-                        const lizGo = go as Lizard;
-                        if (lizGo.body)
-                            lizGo.body.onCollide = true;
-                    }
-                })
-
-                this.lizards.get(256, 128, "lizard");
 
                 this.physics.add.collider(this.lizards, wallsLayer);
 
                 this.playerLizardsCollider = this.physics.add.collider(this.lizards, this.faune, this.handlePlayerLizardCollision, undefined, this);
 
                 this.knives = this.physics.add.group({
-                    classType: Phaser.Physics.Arcade.Image
+                    classType: Phaser.Physics.Arcade.Image,
+                    maxSize: 3
                 });
 
                 this.physics.add.collider(this.knives, wallsLayer, this.handleKnifeWallCollision, undefined, this);

@@ -67,6 +67,12 @@ export default class Faune extends Phaser.Physics.Arcade.Sprite {
     private throwKnife() {
         if (!this.knives)
             return;
+
+        const knife = this.knives.get(this.x, this.y, "knife") as Phaser.Physics.Arcade.Image;
+
+        if (!knife)
+            return;
+
         const parts: string[] = this.anims.currentAnim?.key.split('-') || [];
         const direction = parts[2];
         const vec = new Phaser.Math.Vector2(0, 0);
@@ -88,7 +94,10 @@ export default class Faune extends Phaser.Physics.Arcade.Sprite {
         }
 
         const angle = vec.angle();
-        const knife = this.knives.get(this.x, this.y, "knife") as Phaser.Physics.Arcade.Image;
+
+
+
+
         knife.setActive(true);
         knife.setVisible(true);
         knife.x += vec.x * 16;
@@ -120,12 +129,12 @@ export default class Faune extends Phaser.Physics.Arcade.Sprite {
             return;
 
         if (Phaser.Input.Keyboard.JustDown(cursors.space!)) {
-            
+
             if (this.activeChest && this.activeChest instanceof Chest) {
                 this._coins += this.activeChest.open();
-                sceneEvents.emit("player-coins-changed",this._coins);
+                sceneEvents.emit("player-coins-changed", this._coins);
             }
-                
+
             else
                 this.throwKnife();
             return;
@@ -135,7 +144,7 @@ export default class Faune extends Phaser.Physics.Arcade.Sprite {
         let vx = 0;
         let vy = 0;
 
-        if(cursors.left.isDown || cursors.right.isDown || cursors.up.isDown || cursors.down.isDown){
+        if (cursors.left.isDown || cursors.right.isDown || cursors.up.isDown || cursors.down.isDown) {
             this.activeChest = undefined;
         }
 
