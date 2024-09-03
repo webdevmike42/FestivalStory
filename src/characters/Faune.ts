@@ -12,7 +12,6 @@ declare global {
 }
 
 export default class Faune extends Phaser.Physics.Arcade.Sprite {
-    
     private _health = 3;
     private _coins = 3;
     private _knives: Phaser.Physics.Arcade.Group;

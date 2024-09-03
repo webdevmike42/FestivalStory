@@ -74,7 +74,6 @@ export class Game extends Scene {
                 }
             })
 
-
             const lizardLayer: Phaser.Tilemaps.ObjectLayer | null = map.getObjectLayer("Lizards");
             lizardLayer?.objects.forEach(lizObj => {
                 if (lizObj) {
