@@ -5,7 +5,6 @@ import { createCharacterAnims } from '../anims/CharacterAnims';
 import Lizard from './enemies/Lizard';
 import '../characters/Faune';
 import Faune from '../characters/Faune';
-import StateMachine from '../stateMachine/StateMachine';
 import { sceneEvents } from '../events/EventCenter';
 import { createChestAnims } from '../anims/TreasureAnims';
 import Chest from '../items/Chest';
@@ -29,15 +28,22 @@ export class Game extends Scene {
             this.cursors = this.input.keyboard?.createCursorKeys();
     }
 
-    create() {
-        this.scene.run("game-ui");
-
+    createAnimations() {
         createLizardAnims(this.anims);
         createCharacterAnims(this.anims);
         createChestAnims(this.anims);
+    }
 
+    createCamera() {
         this.camera = this.cameras.main;
         this.camera.setBackgroundColor(0x000000);
+        this.camera.startFollow(this.faune, true);
+    }
+
+    create() {
+        this.scene.run("game-ui");
+
+        this.createAnimations();
 
         const map = this.make.tilemap({ key: "dungeon" });
         const tileset = map.addTilesetImage("dungeon", "tiles", 16, 16, 1, 2);
@@ -88,7 +94,13 @@ export class Game extends Scene {
 
                 this.physics.add.collider(this.lizards, wallsLayer);
 
-                this.playerLizardsCollider = this.physics.add.collider(this.lizards, this.faune, this.handlePlayerLizardCollision, undefined, this);
+                this.playerLizardsCollider = this.physics.add.collider(this.lizards, this.faune, (player: any, lizard: any) => {
+                    sceneEvents.emit("player-hurt-by-enemy", new Phaser.Math.Vector2((player as Faune).x - (lizard as Lizard).x, (player as Faune).y - (lizard as Lizard).y).normalize().scale(200));
+                }, undefined, this);
+
+                sceneEvents.on("destroy-player-lizard-collider", () => {
+                    this.playerLizardsCollider.destroy();
+                })
 
                 this.knives = this.physics.add.group({
                     classType: Phaser.Physics.Arcade.Image,
@@ -101,34 +113,11 @@ export class Game extends Scene {
 
                 this.physics.add.collider(this.faune, chests, this.handlePlayerChestCollision, undefined, this);
 
-                this.faune.setKnives(this.knives);
+                this.faune.knives = this.knives;
             }
         }
 
-        this.camera.startFollow(this.faune, true);
-        /*
-                type PlayerState = 'Idle' | 'Running' | 'Jumping';
-                const playerStateMachine = new StateMachine<PlayerState>("Idle");
-        
-                playerStateMachine.addState('Idle', {
-                    enter: () => console.log('Player enters Idle state'),
-                    exit: () => console.log('Player exits Idle state'),
-                    update: () => console.log('Player is Idle'),
-                });
-        
-                playerStateMachine.addState('Jumping', {
-                    enter: () => console.log('Player enters Jumping state'),
-                    exit: () => console.log('Player exits Jumping state'),
-                    update: () => console.log('Player is Jumping'),
-                });
-        
-                playerStateMachine.transition("Idle");
-                playerStateMachine.transition("Running");
-                playerStateMachine.transition("Jumping");
-                playerStateMachine.transition("Idle");
-                playerStateMachine.transition("Idle");
-                
-                */
+        this.createCamera();
     }
 
     private handlePlayerChestCollision(obj1: any, obj2: any) {
@@ -143,22 +132,6 @@ export class Game extends Scene {
 
     private handleKnifeWallCollision(obj1: any, obj2: any) {
         this.knives.killAndHide(obj1);
-    }
-
-    private handlePlayerLizardCollision(obj1: any, obj2: any) {
-        const lizard = obj2 as Lizard;
-
-        const dx = this.faune.x - lizard.x;
-        const dy = this.faune.y - lizard.y
-
-        const dir = new Phaser.Math.Vector2(dx, dy).normalize().scale(200);
-
-        this.faune.setVelocity(dir.x, dir.y);
-        this.faune.handleDamage(dir);
-        sceneEvents.emit("player-health-changed", this.faune.health)    //todo: put events in enum in separat file
-
-        if (this.faune.health <= 0)
-            this.playerLizardsCollider.destroy();
     }
 
     update(t: number, dt: number) {

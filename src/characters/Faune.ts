@@ -1,6 +1,7 @@
 import Phaser from "phaser";
 import Chest from "../items/Chest";
 import { sceneEvents } from "../events/EventCenter";
+import { createPlayerStateMachine } from "../stateMachine/PlayerStateMachine";
 
 declare global {
     namespace Phaser.GameObjects {
@@ -10,29 +11,58 @@ declare global {
     }
 }
 
-enum HealthStates {
-    IDLE,
-    DAMAGE,
-    DEAD
-}
-
 export default class Faune extends Phaser.Physics.Arcade.Sprite {
-    private healthState = HealthStates.IDLE;
-    private damageTime = 0;
+    
     private _health = 3;
     private _coins = 3;
-    private knives: Phaser.Physics.Arcade.Group;
-    private activeChest: Chest | undefined;
-
+    private _knives: Phaser.Physics.Arcade.Group;
+    private _activeChest: Chest | undefined;
+    private _stateMachine;
+    private _cursors: Phaser.Types.Input.Keyboard.CursorKeys;
 
     constructor(scene: Phaser.Scene, x: number, y: number, texture: string, frame?: string | number) {
         super(scene, x, y, texture, frame);
 
-        this.anims.play("faune-idle-down");
+        this._stateMachine = createPlayerStateMachine(this);
+        
+        sceneEvents.on("player-hurt-by-enemy", (dir: Phaser.Math.Vector2) => {
+            if(this._stateMachine.getState() !== "damage" && this._stateMachine.getState() !== "dead"){
+                this._stateMachine.transition("damage",[dir]);
+            }
+        });   
+    }
+        
+    update(cursors: Phaser.Types.Input.Keyboard.CursorKeys) {
+        this._cursors = cursors;
+        this._stateMachine.update();
     }
 
-    setKnives(knives: Phaser.Physics.Arcade.Group) {
-        this.knives = knives;
+    public get cursors(): Phaser.Types.Input.Keyboard.CursorKeys {
+        return this._cursors;
+    }
+    public set cursors(value: Phaser.Types.Input.Keyboard.CursorKeys) {
+        this._cursors = value;
+    }
+
+    public get activeChest(): Chest | undefined {
+        return this._activeChest;
+    }
+    public set activeChest(value: Chest | undefined) {
+        this._activeChest = value;
+    }
+
+    public get coins() {
+        return this._coins;
+    }
+    public set coins(value) {
+        this._coins = value;
+    }
+
+    public get knives(): Phaser.Physics.Arcade.Group {
+        return this._knives;
+    }
+    public set knives(value: Phaser.Physics.Arcade.Group) {
+        this._knives = value;
     }
 
     setChest(chest: Chest) {
@@ -42,144 +72,8 @@ export default class Faune extends Phaser.Physics.Arcade.Sprite {
     get health() {
         return this._health;
     }
-    get coins() {
-        return this._coins;
-    }
-
-    handleDamage(dir: Phaser.Math.Vector2) {
-        if (this.healthState === HealthStates.DAMAGE || this.healthState === HealthStates.DEAD)
-            return;
-
-        this.setVelocity(dir.x, dir.y);
-
-        this.setTint(0xff0000);
-        this.healthState = HealthStates.DAMAGE;
-        this.damageTime = 0;
-        this._health--;
-        if (this.health <= 0) {
-            this.healthState = HealthStates.DEAD;
-            this.anims.play("faune-faint");
-            this.setVelocity(0, 0);
-            this.clearTint();
-        }
-    }
-
-    private throwKnife() {
-        if (!this.knives)
-            return;
-
-        const knife = this.knives.get(this.x, this.y, "knife") as Phaser.Physics.Arcade.Image;
-
-        if (!knife)
-            return;
-
-        const parts: string[] = this.anims.currentAnim?.key.split('-') || [];
-        const direction = parts[2];
-        const vec = new Phaser.Math.Vector2(0, 0);
-
-        switch (direction) {
-            case "up":
-                vec.y = -1;
-                break;
-            case "down":
-                vec.y = 1;
-                break;
-            default:
-            case "side":
-                if (this.scaleX < 0)
-                    vec.x = -1;
-                else
-                    vec.x = 1;
-                break;
-        }
-
-        const angle = vec.angle();
-
-
-
-
-        knife.setActive(true);
-        knife.setVisible(true);
-        knife.x += vec.x * 16;
-        knife.y += vec.y * 16;
-        knife.setRotation(angle);
-        knife.setVelocity(vec.x * 300, vec.y * 300);
-    }
-
-    preUpdate(t: number, dt: number) {
-        super.preUpdate(t, dt);
-
-        switch (this.healthState) {
-            case HealthStates.IDLE:
-                break;
-            case HealthStates.DAMAGE:
-                this.damageTime += dt;
-                if (this.damageTime >= 250) {
-                    this.healthState = HealthStates.IDLE;
-                    this.clearTint();
-                    this.damageTime = 0;
-                }
-                break;
-        }
-
-    }
-
-    update(cursors: Phaser.Types.Input.Keyboard.CursorKeys) {
-        if (!cursors || this.healthState === HealthStates.DAMAGE || this.healthState === HealthStates.DEAD)
-            return;
-
-        if (Phaser.Input.Keyboard.JustDown(cursors.space!)) {
-
-            if (this.activeChest && this.activeChest instanceof Chest) {
-                this._coins += this.activeChest.open();
-                sceneEvents.emit("player-coins-changed", this._coins);
-            }
-
-            else
-                this.throwKnife();
-            return;
-        }
-
-        const speed: number = 100;
-        let vx = 0;
-        let vy = 0;
-
-        if (cursors.left.isDown || cursors.right.isDown || cursors.up.isDown || cursors.down.isDown) {
-            this.activeChest = undefined;
-        }
-
-        if (cursors.left?.isDown) {
-            vx = -speed;
-            this.scaleX = -1;
-            if (this.body !== null) this.body.offset.x = 24;
-        }
-        if (cursors.right?.isDown) {
-            vx = speed;
-            this.scaleX = 1;
-            if (this.body !== null) this.body.offset.x = 8;
-        }
-        if (cursors.up?.isDown) {
-            vy = -speed;
-        }
-        if (cursors.down?.isDown) {
-            vy = speed;
-        }
-
-        if (vx !== 0 || vy !== 0) {
-            this.setVelocity(vx, vy);
-            if (vx !== 0) {
-                this.anims.play("faune-walk-side", true);
-            } else if (vy < 0) {
-                this.anims.play('faune-walk-up', true);
-            } else if (vy > 0) {
-                this.anims.play('faune-walk-down', true);
-            }
-        } else {
-            this.setVelocity(0, 0);
-            const parts: string[] = this.anims.currentAnim?.key.split('-') || [];
-            parts[1] = 'idle';
-            this.anims.play(parts.join('-'));
-        }
+    set health(health:number){
+        this._health = health;
     }
 }
 
