@@ -1,27 +1,26 @@
-import { MappedInput } from "./MappedInput";
+import { MappedInputController, NO_INPUT } from "./MappedInputController";
 
-export class KeyboardInput implements MappedInput {
-    private cursors: Phaser.Types.Input.Keyboard.CursorKeys | undefined;
+export class KeyboardInput implements MappedInputController {
+    private _cursors: Phaser.Types.Input.Keyboard.CursorKeys | undefined;
 
-    constructor(scene: Phaser.Scene) {
-        this.cursors = scene.input.keyboard?.createCursorKeys();
+    constructor(cursors: Phaser.Types.Input.Keyboard.CursorKeys | undefined) {
+        this._cursors = cursors; 
     }
 
     getInput() {
-        if (!this.cursors) {
+        if (!this._cursors) {
             return {
-                left: false,
-                right: false,
-                up: false,
-                down: false
-            }
-        } else {
-            return {
-                left: this.cursors.left.isDown,
-                right: this.cursors.right.isDown,
-                up: this.cursors.up.isDown,
-                down: this.cursors.down.isDown
+                ...NO_INPUT
             };
         }
+
+        return {
+            left: this._cursors.left.isDown,
+            right: this._cursors.right.isDown,
+            up: this._cursors.up.isDown,
+            down: this._cursors.down.isDown,
+            actionPressed: Phaser.Input.Keyboard.JustDown(this._cursors.space),
+            dashPressed: false
+        };
     }
 }

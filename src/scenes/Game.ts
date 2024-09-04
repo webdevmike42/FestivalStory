@@ -8,6 +8,7 @@ import Faune from '../characters/Faune';
 import { sceneEvents } from '../events/EventCenter';
 import { createChestAnims } from '../anims/TreasureAnims';
 import Chest from '../items/Chest';
+import { KeyboardInput } from '../controller/KeyboardInput';
 
 export class Game extends Scene {
     camera: Phaser.Cameras.Scene2D.Camera;
@@ -125,8 +126,12 @@ export class Game extends Scene {
     }
 
     private handleKnifeLizardCollision(obj1: any, obj2: any) {
-        this.knives.killAndHide(obj1);
-        this.lizards.killAndHide(obj2);
+        const lizard = obj2 as Lizard;
+        const knife = obj1 as Phaser.Physics.Arcade.Image;
+
+        
+        this.knives.killAndHide(knife);
+        sceneEvents.emit("lizard-hurt", new Phaser.Math.Vector2(lizard.x - knife.x, lizard.y - knife.y).normalize().scale(200),1);
     }
 
     private handleKnifeWallCollision(obj1: any, obj2: any) {
@@ -134,6 +139,11 @@ export class Game extends Scene {
     }
 
     update(t: number, dt: number) {
-        this.faune.update(this.cursors);
+        this.faune.update();
+        this.lizards.children.each((lizard: Phaser.GameObjects.GameObject, index: number) => {
+            (lizard as Lizard).update();
+            return true;
+        });
+
     }
 }

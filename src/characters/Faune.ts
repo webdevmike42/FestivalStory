@@ -1,7 +1,9 @@
 import Phaser from "phaser";
 import Chest from "../items/Chest";
 import { sceneEvents } from "../events/EventCenter";
-import { createPlayerStateMachine } from "../stateMachine/PlayerStateMachine";
+import { MappedInputController } from "../controller/MappedInputController";
+import { KeyboardInput } from "../controller/KeyboardInput";
+import { PlayerStateMachine } from "../stateMachine/PlayerStateMachine";
 
 declare global {
     namespace Phaser.GameObjects {
@@ -17,32 +19,34 @@ export default class Faune extends Phaser.Physics.Arcade.Sprite {
     private _knives: Phaser.Physics.Arcade.Group;
     private _activeChest: Chest | undefined;
     private _stateMachine;
-    private _cursors: Phaser.Types.Input.Keyboard.CursorKeys;
+    private _playerInputControl: MappedInputController;
 
     constructor(scene: Phaser.Scene, x: number, y: number, texture: string, frame?: string | number) {
         super(scene, x, y, texture, frame);
 
-        this._stateMachine = createPlayerStateMachine(this);
-        
+        this._stateMachine = new PlayerStateMachine(this);
+        this._playerInputControl = new KeyboardInput(scene.input.keyboard?.createCursorKeys());
+
+        console.log(this._playerInputControl)
+
         sceneEvents.on("player-hurt-by-enemy", (dir: Phaser.Math.Vector2) => {
-            if(this._stateMachine.getState() !== "damage" && this._stateMachine.getState() !== "dead"){
-                this._stateMachine.transition("damage",[dir]);
+            if (this._stateMachine.getState() !== "damage" && this._stateMachine.getState() !== "dead") {
+                this._stateMachine.transition("damage", [dir]);
             }
-        });   
+        });
     }
-        
-    update(cursors: Phaser.Types.Input.Keyboard.CursorKeys) {
-        this._cursors = cursors;
+
+    update() {
         this._stateMachine.update();
     }
 
-    public get cursors(): Phaser.Types.Input.Keyboard.CursorKeys {
-        return this._cursors;
+    public get playerInput(): MappedInputController {
+        return this._playerInputControl;
     }
-    public set cursors(value: Phaser.Types.Input.Keyboard.CursorKeys) {
-        this._cursors = value;
+    public set playerInput(value: MappedInputController) {
+        this._playerInputControl = value;
     }
-
+    
     public get activeChest(): Chest | undefined {
         return this._activeChest;
     }
@@ -71,7 +75,7 @@ export default class Faune extends Phaser.Physics.Arcade.Sprite {
     get health() {
         return this._health;
     }
-    set health(health:number){
+    set health(health: number) {
         this._health = health;
     }
 }

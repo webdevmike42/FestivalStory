@@ -938,7 +938,5 @@
  </objectgroup>
  <objectgroup id="4" name="Lizards">
   <object id="4" gid="79" x="223" y="143.667" width="16" height="16"/>
-  <object id="5" gid="79" x="240.333" y="63" width="16" height="16"/>
-  <object id="6" gid="79" x="111.333" y="62.6667" width="16" height="16"/>
  </objectgroup>
 </map>
