@@ -1,5 +1,5 @@
 import { isAnyMovementKeyDown } from "../controller/MappedInputController";
-import Lizard from "../scenes/enemies/Lizard";
+import Lizard from "../enemies/Lizard";
 import StateMachine from "./StateMachine";
 
 type LizardStates = "idle" | "walk" | "dash" | "damage" | "dead";
@@ -14,12 +14,10 @@ export class LizardStateMachine extends StateMachine<LizardStates>{
     public set lizTimer(value: Phaser.Time.TimerEvent | undefined) {
         this._lizTimer = value;
     }
-   
+
     constructor(lizard: Lizard) {
         super("idle");
         this._lizard = lizard;
-
-     
 
         this.addState("idle", {
             enter: (stateParams: any[]) => {
@@ -33,20 +31,15 @@ export class LizardStateMachine extends StateMachine<LizardStates>{
                 console.log('Lizard is idle');
                 if (isAnyMovementKeyDown(this._lizard.lizInput.getInput()))
                     return this.createTransitionResult("walk", []);
-                
+
             }
         });
 
         this.addState("walk", {
             enter: (stateParams: any[]) => {
-                console.log('Lizard enters walk state');
                 this._lizard.anims.play("lizard-run");
             },
-            exit: () => {
-                console.log('Lizard exits walk state');
-            },
             update: () => {
-                console.log('Lizard is walking');
                 const curInput = this._lizard.lizInput.getInput();
                 if (!isAnyMovementKeyDown(curInput))
                     return this.createTransitionResult("idle", []);
@@ -92,12 +85,15 @@ export class LizardStateMachine extends StateMachine<LizardStates>{
 
                 if (lizard.health <= 0)
                     return this.createTransitionResult("dead", []);
-
-                if (!this.lizTimer)
+                    console.error("znö")
+                    console.error(this.lizTimer)
+                if (!this.lizTimer) {
+                    
                     this.lizTimer = lizard.scene.time.delayedCall(250, () => {
                         console.log("delayed call")
                         this.transition("idle", [])
                     });
+                }
             }
         });
 

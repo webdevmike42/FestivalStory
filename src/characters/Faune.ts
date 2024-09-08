@@ -4,6 +4,7 @@ import { sceneEvents } from "../events/EventCenter";
 import { MappedInputController } from "../controller/MappedInputController";
 import { KeyboardInput } from "../controller/KeyboardInput";
 import { PlayerStateMachine } from "../stateMachine/PlayerStateMachine";
+import { EventManager } from "../events/EventManager";
 
 declare global {
     namespace Phaser.GameObjects {
@@ -18,26 +19,43 @@ export default class Faune extends Phaser.Physics.Arcade.Sprite {
     private _coins = 3;
     private _knives: Phaser.Physics.Arcade.Group;
     private _activeChest: Chest | undefined;
-    private _stateMachine;
+    private _stateMachine: PlayerStateMachine;
     private _playerInputControl: MappedInputController;
 
     constructor(scene: Phaser.Scene, x: number, y: number, texture: string, frame?: string | number) {
         super(scene, x, y, texture, frame);
 
-        this._stateMachine = new PlayerStateMachine(this);
         this._playerInputControl = new KeyboardInput(scene.input.keyboard?.createCursorKeys());
 
-        console.log(this._playerInputControl)
+      
+    }
 
+    initStateMachine() {
+        this._stateMachine = new PlayerStateMachine(this);
+/*
+        sceneEvents.off("player-hurt-by-enemy");//Alte Eventlistener entfernen nach dem Szenenwechsel
         sceneEvents.on("player-hurt-by-enemy", (dir: Phaser.Math.Vector2) => {
             if (this._stateMachine.getState() !== "damage" && this._stateMachine.getState() !== "dead") {
+                console.error("before transition");
                 this._stateMachine.transition("damage", [dir]);
             }
         });
+        */
+       EventManager.on("player-hurt-by-enemy", (dir: Phaser.Math.Vector2) => {
+        if (this._stateMachine.getState() !== "damage" && this._stateMachine.getState() !== "dead") {
+            console.error("before transition");
+            this._stateMachine.transition("damage", [dir]);
+        }
+    });
+    }
+
+    getStateMachine(){
+        return this._stateMachine;
     }
 
     update() {
-        this._stateMachine.update();
+        if (this._stateMachine)
+            this._stateMachine.update();
     }
 
     public get playerInput(): MappedInputController {
@@ -46,7 +64,7 @@ export default class Faune extends Phaser.Physics.Arcade.Sprite {
     public set playerInput(value: MappedInputController) {
         this._playerInputControl = value;
     }
-    
+
     public get activeChest(): Chest | undefined {
         return this._activeChest;
     }

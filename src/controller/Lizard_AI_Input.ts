@@ -1,4 +1,4 @@
-import Lizard from "../scenes/enemies/Lizard";
+import Lizard from "../enemies/Lizard";
 import { MappedInputController, MappedInputResult, createMappedInputResult } from "./MappedInputController";
 
 enum Direction {

@@ -114,13 +114,16 @@ export class PlayerStateMachine extends StateMachine<PlayerStates>{
 
         this.addState("damage", {
             enter: (stateParams: any[]) => {
-                console.log('Player enters damage state')
+                console.error('Player enters damage state');
+                console.error(this._player.body);
+
                 if (!stateParams)
                     return;
 
                 const dir = stateParams[0] as Phaser.Math.Vector2;
-
-                this.player.setVelocity(dir.x, dir.y);
+                
+                if (this.player.body)
+                    this.player.setVelocity(dir.x, dir.y);
                 this.player.setTint(0xff0000);
                 this.player.health--;
                 this.timer = undefined;
@@ -141,8 +144,8 @@ export class PlayerStateMachine extends StateMachine<PlayerStates>{
 
                 if (!this.timer)
                     this.timer = this.player.scene.time.delayedCall(250, () => {
-                        console.log("delayed call")
                         this.transition("idle", [])
+
                     });
             }
         });

@@ -226,6 +226,29 @@
         }, 
         {
          "draworder":"topdown",
+         "id":5,
+         "name":"FloorSwitches",
+         "objects":[
+                {
+                 "gid":56,
+                 "height":16,
+                 "id":7,
+                 "name":"",
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":16,
+                 "x":79.6666666666667,
+                 "y":109.333333333333
+                }],
+         "opacity":1,
+         "type":"objectgroup",
+         "visible":true,
+         "x":0,
+         "y":0
+        }, 
+        {
+         "draworder":"topdown",
          "id":3,
          "name":"Chests",
          "objects":[
@@ -294,8 +317,8 @@
          "x":0,
          "y":0
         }],
- "nextlayerid":5,
- "nextobjectid":7,
+ "nextlayerid":6,
+ "nextobjectid":8,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"1.11.0",

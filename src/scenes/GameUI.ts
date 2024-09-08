@@ -1,5 +1,6 @@
 import Phaser from "phaser";
 import { sceneEvents } from "../events/EventCenter";
+import { EventManager } from "../events/EventManager";
 
 export default class GameUI extends Phaser.Scene {
 
@@ -14,7 +15,7 @@ export default class GameUI extends Phaser.Scene {
         const coinsLabel = this.add.text(205, 20, "0");
         this.add.image(200,27,"treasure","coin_anim_f0.png");
 
-        sceneEvents.on("player-coins-changed", (coins : number) => {
+        EventManager.on("player-coins-changed", (coins : number) => {
             coinsLabel.text = coins.toLocaleString();
         })
 
@@ -32,7 +33,7 @@ export default class GameUI extends Phaser.Scene {
             quantity: 3
         });
 
-        sceneEvents.on("player-health-changed", (newHealth: number) => {
+        EventManager.on("player-health-changed", (newHealth: number) => {
             this.hearts.children.each((go, index) => {
                 (go as Phaser.GameObjects.Image).setTexture((index <= newHealth - 1) ? "ui-heart-full" : "ui-heart-empty")
                 return true;

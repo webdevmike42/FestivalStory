@@ -2,6 +2,7 @@ import { Boot } from './scenes/Boot';
 import { Game as MainGame } from './scenes/Game';
 import GameUI from './scenes/GameUI';
 import { Preloader } from './scenes/Preloader';
+import {Dungeon01Floor00} from "./scenes/Dungeon01Floor00";
 
 import { Game, Types } from "phaser";
 
@@ -28,7 +29,8 @@ const config: Types.Core.GameConfig = {
         Boot,
         Preloader,
         MainGame,
-        GameUI
+        GameUI,
+        Dungeon01Floor00
     ]
 };
 
