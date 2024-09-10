@@ -233,13 +233,29 @@
                  "gid":56,
                  "height":16,
                  "id":7,
-                 "name":"",
+                 "name":"FloorSwitchOpenChest",
+                 "properties":[
+                        {
+                         "name":"OpenChest",
+                         "type":"object",
+                         "value":3
+                        }, 
+                        {
+                         "name":"pressEvent",
+                         "type":"string",
+                         "value":"FloorSwitchOpenChestPressed"
+                        }, 
+                        {
+                         "name":"releaseEvent",
+                         "type":"string",
+                         "value":"FloorSwitchOpenChestReleased"
+                        }],
                  "rotation":0,
                  "type":"",
                  "visible":true,
                  "width":16,
-                 "x":79.6666666666667,
-                 "y":109.333333333333
+                 "x":79.6667,
+                 "y":109.333
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -280,7 +296,7 @@
                  "gid":59,
                  "height":16,
                  "id":3,
-                 "name":"",
+                 "name":"NamedChest",
                  "rotation":0,
                  "type":"",
                  "visible":true,

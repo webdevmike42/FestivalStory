@@ -8,12 +8,19 @@ import { EventManager } from "../events/EventManager";
 import { debugDraw } from "../utils/debug";
 
 export class BaseDungeonScene extends Phaser.Scene {
-    player: Faune;
+    private _player: Faune;
+    public get player(): Faune {
+        return this._player;
+    }
+    public set player(value: Faune) {
+        this._player = value;
+    }
     camera: Phaser.Cameras.Scene2D.Camera;
     tilemap: Phaser.Tilemaps.Tilemap;
     tileset: Phaser.Tilemaps.Tileset | null;
     enemies: Phaser.Physics.Arcade.Group;
     playerEnemyCollider: Phaser.Physics.Arcade.Collider;
+    floorSwitches : Phaser.Physics.Arcade.Group;
 
     create(mapKey: string, tilesetImageKey: string) {
 
@@ -64,23 +71,8 @@ export class BaseDungeonScene extends Phaser.Scene {
                 }
             });
 
-            const floorSwitches = this.physics.add.group({
+            this.floorSwitches = this.physics.add.group({
                 classType: FloorSwitch
-            });
-
-            const floorSwitchLayer: Phaser.Tilemaps.ObjectLayer | null = this.tilemap.getObjectLayer("FloorSwitches");
-            floorSwitchLayer?.objects.forEach(fsObj => {
-                if (fsObj) {
-                    // correct x and y because origin is in the middle of the object
-                    floorSwitches.get(fsObj.x! + fsObj.width! * 0.5, fsObj.y! - fsObj.height! * 0.5, "treasure");
-                }
-            });
-
-            this.physics.add.overlap(this.player, floorSwitches, (playerObj, floorSwitchObj) => {
-                const player = playerObj as Faune;
-                const floorSwitch = floorSwitchObj as FloorSwitch;
-
-                sceneEvents.emit("floorSwitch-overlapped", floorSwitch, player);
             });
 
             const lizards = this.physics.add.group({
@@ -99,7 +91,7 @@ export class BaseDungeonScene extends Phaser.Scene {
             lizardLayer?.objects.forEach(lizObj => {
                 if (lizObj) {
                     // correct x and y because origin is in the middle of the object
-                    lizards.get(lizObj.x! + lizObj.width! * 0.5, lizObj.y! - lizObj.height! * 0.5, "lizard");
+                    //lizards.get(lizObj.x! + lizObj.width! * 0.5, lizObj.y! - lizObj.height! * 0.5, "lizard");
                 }
             });
 
@@ -124,8 +116,6 @@ export class BaseDungeonScene extends Phaser.Scene {
                 const lizard = obj2 as Lizard;
                 const knife = obj1 as Phaser.Physics.Arcade.Image;
 
-                
-                console.error("in collider")
                 sceneEvents.emit("lizard-hurt", new Phaser.Math.Vector2(lizard.x - knife.x, lizard.y - knife.y).normalize().scale(200), 1);
                 knives.killAndHide(knife);
             }, undefined, this);

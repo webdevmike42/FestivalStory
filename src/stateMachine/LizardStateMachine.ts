@@ -21,14 +21,14 @@ export class LizardStateMachine extends StateMachine<LizardStates>{
 
         this.addState("idle", {
             enter: (stateParams: any[]) => {
-                console.log('Lizard enters Idle state');
+                
                 this._lizard.anims.play("lizard-run", true);
             },
             exit: () => {
-                console.log('Lizard exits Idle state');
+                
             },
             update: () => {
-                console.log('Lizard is idle');
+                
                 if (isAnyMovementKeyDown(this._lizard.lizInput.getInput()))
                     return this.createTransitionResult("walk", []);
 

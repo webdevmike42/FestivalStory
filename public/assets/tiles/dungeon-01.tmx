@@ -932,12 +932,18 @@
 </data>
  </layer>
  <objectgroup id="5" name="FloorSwitches">
-  <object id="7" gid="56" x="79.6667" y="109.333" width="16" height="16"/>
+  <object id="7" name="FloorSwitchOpenChest" gid="56" x="79.6667" y="109.333" width="16" height="16">
+   <properties>
+    <property name="OpenChest" type="object" value="3"/>
+    <property name="pressEvent" value="FloorSwitchOpenChestPressed"/>
+    <property name="releaseEvent" value="FloorSwitchOpenChestReleased"/>
+   </properties>
+  </object>
  </objectgroup>
  <objectgroup id="3" name="Chests">
   <object id="1" gid="59" x="64" y="61.6667" width="16" height="16"/>
   <object id="2" gid="59" x="272.667" y="64.6667" width="16" height="16"/>
-  <object id="3" gid="59" x="160" y="65" width="16" height="16"/>
+  <object id="3" name="NamedChest" gid="59" x="160" y="65" width="16" height="16"/>
  </objectgroup>
  <objectgroup id="4" name="Lizards">
   <object id="4" gid="79" x="223" y="143.667" width="16" height="16"/>

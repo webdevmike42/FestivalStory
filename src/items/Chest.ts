@@ -20,7 +20,7 @@ export default class Chest extends Phaser.Physics.Arcade.Sprite {
 
     open() {
         if (this.anims.currentAnim?.key !== 'chest-closed') {
-            return 0
+            return 0;
         }
 
         this.play('chest-open');

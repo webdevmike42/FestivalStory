@@ -55,33 +55,3 @@ export default class StateMachine<S extends string> {
         }
     }
 }
-
-// Beispielnutzung für zwei verschiedene Spielobjekte
-
-// Spieler mit Zuständen
-//type PlayerState = 'Idle' | 'Running' | 'Jumping';
-
-//const playerStateMachine = new StateMachine<PlayerState>('Idle');
-/*
-// Gegner mit anderen Zuständen
-type EnemyState = 'Patrolling' | 'Attacking' | 'Dead';
-const enemyStateMachine = new StateMachine<EnemyState>('Patrolling');
-
-playerStateMachine.addState('Idle', {
-    enter: () => console.log('Player enters Idle state'),
-    exit: () => console.log('Player exits Idle state'),
-    update: () => console.log('Player is Idle'),
-});
-
-enemyStateMachine.addState('Attacking', {
-    enter: () => console.log('Enemy starts attacking'),
-    exit: () => console.log('Enemy stops attacking'),
-    update: () => console.log('Enemy is attacking'),
-});
-*/
-
-// Zustandsübergänge
-
-//playerStateMachine.transition('Running');
-//enemyStateMachine.transition('Attacking');
-

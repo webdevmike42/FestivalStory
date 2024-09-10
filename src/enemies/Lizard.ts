@@ -2,7 +2,6 @@ import Phaser from "phaser";
 import { MappedInputController } from "../controller/MappedInputController";
 import { Lizard_AI_Input } from "../controller/Lizard_AI_Input";
 import { LizardStateMachine } from "../stateMachine/LizardStateMachine";
-import { sceneEvents } from "../events/EventCenter";
 import { EventManager } from "../events/EventManager";
 
 export default class Lizard extends Phaser.Physics.Arcade.Sprite {
@@ -22,13 +21,10 @@ export default class Lizard extends Phaser.Physics.Arcade.Sprite {
                 this._stateMachine.transition("damage", [dir, damage]);
             }
         });
-
-        console.error("liz Con")
     }
 
     initStateMachine() {
         this._stateMachine = new LizardStateMachine(this);
-        console.error("liz init fsm")
     }
 
     preUpdate() {
