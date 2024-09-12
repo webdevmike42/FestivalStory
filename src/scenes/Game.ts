@@ -1,8 +1,9 @@
 import '../characters/Faune';
-import FloorSwitch from '../objects/FloorSwitch';
+import FloorSwitch, { getFloorSwitchByName } from '../objects/FloorSwitch';
 import { BaseDungeonScene } from './BaseDungeonScene';
 
 export class Game extends BaseDungeonScene {
+    first = true;
     constructor() {
         super('Game');
     }
@@ -10,29 +11,17 @@ export class Game extends BaseDungeonScene {
     create() {
         super.create("dungeon", "tilesetImage");
 
-        const floorSwitchLayer: Phaser.Tilemaps.ObjectLayer | null = this.tilemap.getObjectLayer("FloorSwitches");
-        floorSwitchLayer?.objects.forEach(fsObj => {
-            if (fsObj) {
-                // correct x and y because origin is in the middle of the object
-                const fs: FloorSwitch = this.floorSwitches.get(fsObj.x! + fsObj.width! * 0.5, fsObj.y! - fsObj.height! * 0.5, "treasure");
-                fs.init(this.player, fsObj.properties || []);
-            }
-        });
-
-        this.time.delayedCall(1000, () => {
+        this.time.delayedCall(2000, () => {
             this.scene.start("Dungeon01Floor00");
         })
     }
 
     update(t: number, dt: number) {
+        if(this.first){
+            console.log(getFloorSwitchByName("FloorSwitchOpenChest",this.floorSwitches.children.entries as FloorSwitch[]));
+            this.first = false;
+        }
         super.update(t, dt);
-
-        this.floorSwitches.children.each((floorSwitch: Phaser.GameObjects.GameObject, index: number) => {
-            (floorSwitch as FloorSwitch).update(t,dt);
-            return true;
-        });
-
+        
     }
-
-
 }

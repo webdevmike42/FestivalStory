@@ -15,7 +15,7 @@ export class FloorSwitchStateMachine extends StateMachine<FloorSwitchStates>{
         this._floorSwitch = value;
     }
 
-    constructor(floorSwitch: FloorSwitch, pressCallback: Function = () => { }, releaseCallback: Function = () => { }) {
+    constructor(floorSwitch: FloorSwitch) {
         super("released");
         this._floorSwitch = floorSwitch;
 
@@ -24,6 +24,9 @@ export class FloorSwitchStateMachine extends StateMachine<FloorSwitchStates>{
                 console.log('FS enters released state');
                 sceneEvents.emit(this._floorSwitch.releaseEvent, this._floorSwitch);
                 this.floorSwitch.anims.play('chest-closed');
+            },
+            exit: () => {
+                console.log('FS exits released state');
             },
             update: () => {
                 if (this.floorSwitch.scene.physics.overlap(this.floorSwitch, this._floorSwitch.player))
@@ -36,14 +39,12 @@ export class FloorSwitchStateMachine extends StateMachine<FloorSwitchStates>{
                 console.log('FS enters pressed state');
                 sceneEvents.emit(this._floorSwitch.pressEvent, this._floorSwitch);
                 this.floorSwitch.anims.play('chest-open', true);
-                console.log(this.floorSwitch.anims.currentAnim?.key);
             },
             exit: () => {
                 console.log('FS exits pressed state');
             },
             update: () => {
-                const isOverlapping = this.floorSwitch.scene.physics.overlap(this.floorSwitch, this.floorSwitch.player); // Spieler oder ein anderes Objekt
-                if (!this.floorSwitch.staysPressed && !isOverlapping)
+                if (!this.floorSwitch.staysPressed && !this.floorSwitch.scene.physics.overlap(this.floorSwitch, this.floorSwitch.player))
                     return this.createTransitionResult("released", []);
             }
         });

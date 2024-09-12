@@ -1,6 +1,5 @@
 import Phaser from "phaser";
 import { FloorSwitchStateMachine } from "../stateMachine/FloorSwitchStateMachine";
-import { EventManager } from "../events/EventManager";
 import Faune from "../characters/Faune";
 
 enum TiledProperties {
@@ -10,8 +9,15 @@ enum TiledProperties {
 
 export default class FloorSwitch extends Phaser.Physics.Arcade.Sprite {
     private _stateMachine: FloorSwitchStateMachine;
-    private _overlappingObject: Phaser.GameObjects.GameObject | undefined;
     private _staysPressed = false;
+    private _fsName: string;
+    public get fsName(): string {
+        return this._fsName;
+    }
+    public set fsName(value: string) {
+        this._fsName = value;
+    }
+
     public get staysPressed() {
         return this._staysPressed;
     }
@@ -54,12 +60,11 @@ export default class FloorSwitch extends Phaser.Physics.Arcade.Sprite {
     constructor(scene: Phaser.Scene, x: number, y: number, texture: string, frame?: string | number) {
         super(scene, x, y, texture, frame);
     }
-    
 
     preUpdate(t: number, dt: number) {
-        super.preUpdate(t,dt);
-        
-        if (!this._stateMachine){
+        super.preUpdate(t, dt);
+
+        if (!this._stateMachine) {
             this._stateMachine = new FloorSwitchStateMachine(this);
         }
     }
@@ -69,18 +74,24 @@ export default class FloorSwitch extends Phaser.Physics.Arcade.Sprite {
         this._stateMachine.update();
     }
 
-    init(player: Faune, tiledProperties: any[]) {
-        
-        //console.error("FS INIT");
+    init(player: Faune, tiledObject: Phaser.Types.Tilemaps.TiledObject) {
         this.player = player;
-        tiledProperties.forEach((prop, index) => {
+        this.fsName = tiledObject.name;
+        tiledObject.properties.forEach((prop: any, index: number) => {
             //console.error(index);
             //console.error(prop["name"]);
             if (prop["name"] === TiledProperties.PRESS_EVENT)
                 this.pressEvent = prop["value"];
             if (prop["name"] === TiledProperties.RELEASE_EVENT)
                 this.releaseEvent = prop["value"];
-
         });
     }
+}
+
+const getFloorSwitchByName = (fsName: string, floorSwitches: FloorSwitch[]): FloorSwitch | undefined => {
+    return floorSwitches.find(fs => fs.fsName === fsName);
+}
+
+export {
+    getFloorSwitchByName
 }

@@ -20,7 +20,7 @@ export class BaseDungeonScene extends Phaser.Scene {
     tileset: Phaser.Tilemaps.Tileset | null;
     enemies: Phaser.Physics.Arcade.Group;
     playerEnemyCollider: Phaser.Physics.Arcade.Collider;
-    floorSwitches : Phaser.Physics.Arcade.Group;
+    floorSwitches: Phaser.Physics.Arcade.Group;
 
     create(mapKey: string, tilesetImageKey: string) {
 
@@ -73,6 +73,15 @@ export class BaseDungeonScene extends Phaser.Scene {
 
             this.floorSwitches = this.physics.add.group({
                 classType: FloorSwitch
+            });
+
+            const floorSwitchLayer: Phaser.Tilemaps.ObjectLayer | null = this.tilemap.getObjectLayer("FloorSwitches");
+            floorSwitchLayer?.objects.forEach(fsObj => {
+                if (fsObj) {
+                    // correct x and y because origin is in the middle of the object
+                    const fs: FloorSwitch = this.floorSwitches.get(fsObj.x! + fsObj.width! * 0.5, fsObj.y! - fsObj.height! * 0.5, "treasure");
+                    fs.init(this.player, fsObj);
+                }
             });
 
             const lizards = this.physics.add.group({
@@ -179,11 +188,16 @@ export class BaseDungeonScene extends Phaser.Scene {
         }
     }
 
-    update(t: number, dt: number){
+    update(t: number, dt: number) {
         this.player.update();
-        
+
         this.enemies.children.each((enemy: Phaser.GameObjects.GameObject, index: number) => {
             (enemy).update();
+            return true;
+        });
+
+        this.floorSwitches.children.each((floorSwitch: Phaser.GameObjects.GameObject, index: number) => {
+            (floorSwitch as FloorSwitch).update(t,dt);
             return true;
         });
     }
