@@ -298,7 +298,7 @@
                  "id":3,
                  "name":"NamedChest",
                  "rotation":0,
-                 "type":"",
+                 "type":"Chest",
                  "visible":true,
                  "width":16,
                  "x":160,

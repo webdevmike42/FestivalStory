@@ -11,9 +11,11 @@ export class Game extends BaseDungeonScene {
     create() {
         super.create("dungeon", "tilesetImage");
 
+        /*
         this.time.delayedCall(2000, () => {
             this.scene.start("Dungeon01Floor00");
         })
+        */
     }
 
     update(t: number, dt: number) {

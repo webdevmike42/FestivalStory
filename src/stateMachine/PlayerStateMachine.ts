@@ -1,7 +1,10 @@
 import Faune from "../characters/Faune";
 import { isAnyMovementKeyDown } from "../controller/MappedInputController";
-import { sceneEvents } from "../events/EventCenter";
-import Chest from "../items/Chest";
+import { EventManager, GAME_EVENTS } from "../events/EventManager";
+import Chest, { getChestByName } from "../items/Chest";
+import FloorSwitch from "../objects/FloorSwitch";
+import { BaseDungeonScene } from "../scenes/BaseDungeonScene";
+import { getNearestOverlappingChest } from "../utils/GameObjectDetectionHelper";
 import StateMachine from "./StateMachine";
 
 type PlayerStates = "idle" | "walk" | "attack" | "damage" | "dead";
@@ -48,11 +51,35 @@ export class PlayerStateMachine extends StateMachine<PlayerStates>{
                 }
 
                 if (pInput.actionPressed) {
-                    if (this.player.activeChest && this.player.activeChest instanceof Chest) {
-                        this.player.coins += this.player.activeChest.open();
-                        sceneEvents.emit("player-coins-changed", this.player.coins);
-                    } else
-                        return this.createTransitionResult("attack", []);
+                    const gScene = this.player.gameScene;
+                    const helperBox = gScene.add.rectangle(this.player.x + this.player.viewVector.x * this.player.displayWidth, this.player.y + this.player.viewVector.y * this.player.displayHeight, this.player.displayWidth, this.player.displayHeight);
+                    helperBox.setVisible(false);
+                    gScene.physics.add.existing(helperBox);
+
+                    let nearestChest: Chest | undefined = undefined;
+                    let shortestDistance = Infinity;
+
+                    // Overlap-Erkennung
+                    const overlap = gScene.physics.add.overlap(helperBox, gScene.getChests(), (helper, chestObj) => {
+                        const chest = chestObj as Chest;
+                        const distance = Phaser.Math.Distance.Between(helperBox.x, helperBox.y, chest.x, chest.y);
+                        if (distance < shortestDistance) {
+                            shortestDistance = distance;
+                            nearestChest = chest;
+                        }
+                    });
+
+                    // once kann auch weiter unten stehen
+                    gScene.physics.world.once('worldstep', () => {
+                        if (nearestChest) {
+                            console.error(nearestChest);
+                            EventManager.emit(GAME_EVENTS.PLAYER_ATTEMPT_OPEN_CHEST + nearestChest.chestId, nearestChest, this.player);
+                        }
+                        helperBox.destroy();
+                        gScene.physics.world.removeCollider(overlap);
+                        nearestChest = undefined;
+                        shortestDistance = Infinity;
+                    });
                 }
             }
         });
@@ -84,18 +111,26 @@ export class PlayerStateMachine extends StateMachine<PlayerStates>{
                 if (curInput.left) {
                     vx = -speed;
                     this.player.scaleX = -1;
-                    if (this.player.body !== null) this.player.body.offset.x = 24;
+                    this.player.viewVector = new Phaser.Math.Vector2(-1, 0);
+
+                    if (this.player.body !== null)
+                        this.player.body.offset.x = 24;
                 }
                 if (curInput.right) {
                     vx = speed;
                     this.player.scaleX = 1;
-                    if (this.player.body !== null) this.player.body.offset.x = 8;
+                    this.player.viewVector = new Phaser.Math.Vector2(1, 0);
+
+                    if (this.player.body !== null)
+                        this.player.body.offset.x = 8;
                 }
                 if (curInput.up) {
                     vy = -speed;
+                    this.player.viewVector = new Phaser.Math.Vector2(0, -1);
                 }
                 if (curInput.down) {
                     vy = speed;
+                    this.player.viewVector = new Phaser.Math.Vector2(0, 1);
                 }
 
                 if (vx !== 0 || vy !== 0) {
@@ -108,7 +143,6 @@ export class PlayerStateMachine extends StateMachine<PlayerStates>{
                         this.player.anims.play('faune-walk-down', true);
                     }
                 }
-
             }
         });
 
@@ -121,13 +155,13 @@ export class PlayerStateMachine extends StateMachine<PlayerStates>{
                     return;
 
                 const dir = stateParams[0] as Phaser.Math.Vector2;
-                
+
                 if (this.player.body)
                     this.player.setVelocity(dir.x, dir.y);
                 this.player.setTint(0xff0000);
                 this.player.health--;
                 this.timer = undefined;
-                sceneEvents.emit("player-health-changed", this.player.health);    //todo: put events in enum in separat
+                EventManager.emit(GAME_EVENTS.PLAYER_HEALTH_CHANGED, this.player.health);
             },
 
             exit: () => {
@@ -154,7 +188,7 @@ export class PlayerStateMachine extends StateMachine<PlayerStates>{
             enter: (stateParams: any[]) => {
                 console.log('Player enters dead state')
                 this.player.anims.play("faune-faint");
-                sceneEvents.emit("destroy-player-lizard-collider");
+                EventManager.emit(GAME_EVENTS.DESTROY_PLAYER_LIZARD_COLLIDER);
             }
         });
 
@@ -209,5 +243,6 @@ export class PlayerStateMachine extends StateMachine<PlayerStates>{
 
     private start() {
         this.transition("idle", []);
+        this.player.viewVector = new Phaser.Math.Vector2(1,0);
     }
 }

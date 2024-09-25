@@ -4,7 +4,7 @@ import { sceneEvents } from "../events/EventCenter";
 import Chest from "../items/Chest";
 import FloorSwitch from "../objects/FloorSwitch";
 import { GameManager } from "../utils/GameManager";
-import { EventManager } from "../events/EventManager";
+import { EventManager, GAME_EVENTS } from "../events/EventManager";
 import { debugDraw } from "../utils/debug";
 
 export class BaseDungeonScene extends Phaser.Scene {
@@ -21,6 +21,13 @@ export class BaseDungeonScene extends Phaser.Scene {
     enemies: Phaser.Physics.Arcade.Group;
     playerEnemyCollider: Phaser.Physics.Arcade.Collider;
     floorSwitches: Phaser.Physics.Arcade.Group;
+    private _chests: Phaser.Physics.Arcade.StaticGroup;
+    public get chests(): Phaser.Physics.Arcade.StaticGroup {
+        return this._chests;
+    }
+    public set chests(value: Phaser.Physics.Arcade.StaticGroup) {
+        this._chests = value;
+    }
 
     create(mapKey: string, tilesetImageKey: string) {
 
@@ -59,7 +66,7 @@ export class BaseDungeonScene extends Phaser.Scene {
                 debugDraw(wallsLayer, this);
             }
 
-            const chests = this.physics.add.staticGroup({
+            this.chests = this.physics.add.staticGroup({
                 classType: Chest
             })
 
@@ -67,7 +74,8 @@ export class BaseDungeonScene extends Phaser.Scene {
             chestLayer?.objects.forEach(chestObj => {
                 if (chestObj) {
                     // correct x and y because origin is in the middle of the object
-                    chests.get(chestObj.x! + chestObj.width! * 0.5, chestObj.y! - chestObj.height! * 0.5, "treasure");
+                    const chest: Chest = this.chests.get(chestObj.x! + chestObj.width! * 0.5, chestObj.y! - chestObj.height! * 0.5, "treasure");
+                    chest.init(this.player, chestObj);
                 }
             });
 
@@ -78,6 +86,7 @@ export class BaseDungeonScene extends Phaser.Scene {
             const floorSwitchLayer: Phaser.Tilemaps.ObjectLayer | null = this.tilemap.getObjectLayer("FloorSwitches");
             floorSwitchLayer?.objects.forEach(fsObj => {
                 if (fsObj) {
+                    console.error(fsObj);
                     // correct x and y because origin is in the middle of the object
                     const fs: FloorSwitch = this.floorSwitches.get(fsObj.x! + fsObj.width! * 0.5, fsObj.y! - fsObj.height! * 0.5, "treasure");
                     fs.init(this.player, fsObj);
@@ -113,7 +122,7 @@ export class BaseDungeonScene extends Phaser.Scene {
                 this.playerEnemyCollider = this.physics.add.collider(this.enemies, this.player, (player, enemy) => {
                     const vecP = new Phaser.Math.Vector2((this.player as Phaser.GameObjects.GameObject).body?.position);
                     const vecE = new Phaser.Math.Vector2((enemy as Phaser.GameObjects.GameObject).body?.position);
-                    sceneEvents.emit("player-hurt-by-enemy", vecP.subtract(vecE).normalize().scale(200));
+                    EventManager.emit(GAME_EVENTS.PLAYER_HURT_BY_ENEMY, vecP.subtract(vecE).normalize().scale(200));
                 }, undefined, this);
             }
 
@@ -125,15 +134,15 @@ export class BaseDungeonScene extends Phaser.Scene {
                 const lizard = obj2 as Lizard;
                 const knife = obj1 as Phaser.Physics.Arcade.Image;
 
-                sceneEvents.emit("lizard-hurt", new Phaser.Math.Vector2(lizard.x - knife.x, lizard.y - knife.y).normalize().scale(200), 1);
+                EventManager.emit(GAME_EVENTS.LIZARD_HURT, new Phaser.Math.Vector2(lizard.x - knife.x, lizard.y - knife.y).normalize().scale(200), 1);
                 knives.killAndHide(knife);
             }, undefined, this);
 
-            this.physics.add.collider(knives, chests, (obj1: any, obj2: any) => {
+            this.physics.add.collider(knives, this.chests, (obj1: any, obj2: any) => {
                 knives.killAndHide(obj1);
             }, undefined, this);
 
-            this.physics.add.collider(this.player, chests, (obj1: any, obj2: any) => {
+            this.physics.add.collider(this.player, this.chests, (obj1: any, obj2: any) => {
                 const chest = obj2 as Chest;
                 this.player.setChest(chest);
             }, undefined, this);
@@ -169,6 +178,7 @@ export class BaseDungeonScene extends Phaser.Scene {
         // Sicherstellen, dass der Physik-Body aktiv ist
         if (this.player.body) {
             (this.player.body as Phaser.Physics.Arcade.Body).setCollideWorldBounds(true);
+            this.player.body.setSize(this.player.width * 0.5, this.player.height * 0.8);
         }
 
         this.children.add(this.player); // Spieler zur Display-Liste hinzufügen
@@ -197,8 +207,16 @@ export class BaseDungeonScene extends Phaser.Scene {
         });
 
         this.floorSwitches.children.each((floorSwitch: Phaser.GameObjects.GameObject, index: number) => {
-            (floorSwitch as FloorSwitch).update(t,dt);
+            (floorSwitch as FloorSwitch).update(t, dt);
             return true;
         });
+    }
+
+    getObjectsByType<T>(type: new (...args: any[]) => T): T[] {
+        return this.children.getChildren().filter((go) => go instanceof type) as T[];
+      }
+
+    getChests(): Chest[] {
+        return this.getObjectsByType(Chest);
     }
 }

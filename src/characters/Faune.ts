@@ -5,6 +5,7 @@ import { MappedInputController } from "../controller/MappedInputController";
 import { KeyboardInput } from "../controller/KeyboardInput";
 import { PlayerStateMachine } from "../stateMachine/PlayerStateMachine";
 import { EventManager } from "../events/EventManager";
+import { BaseDungeonScene } from "../scenes/BaseDungeonScene";
 
 declare global {
     namespace Phaser.GameObjects {
@@ -21,13 +22,27 @@ export default class Faune extends Phaser.Physics.Arcade.Sprite {
     private _activeChest: Chest | undefined;
     private _stateMachine: PlayerStateMachine;
     private _playerInputControl: MappedInputController;
+    private _viewVector: Phaser.Math.Vector2;
+    public get viewVector(): Phaser.Math.Vector2 {
+        return this._viewVector;
+    }
+    public set viewVector(value: Phaser.Math.Vector2) {
+        this._viewVector = value;
+    }
 
-    constructor(scene: Phaser.Scene, x: number, y: number, texture: string, frame?: string | number) {
+    private _gameScene: BaseDungeonScene;
+    public get gameScene(): BaseDungeonScene {
+        return this._gameScene;
+    }
+    public set gameScene(value: BaseDungeonScene) {
+        this._gameScene = value;
+    }
+
+    constructor(scene: BaseDungeonScene, x: number, y: number, texture: string, frame?: string | number) {
         super(scene, x, y, texture, frame);
 
         this._playerInputControl = new KeyboardInput(scene.input.keyboard?.createCursorKeys());
-
-      
+        this.gameScene = scene;
     }
 
     initStateMachine() {
@@ -99,7 +114,7 @@ export default class Faune extends Phaser.Physics.Arcade.Sprite {
 }
 
 Phaser.GameObjects.GameObjectFactory.register('faune', function (this: Phaser.GameObjects.GameObjectFactory, x: number, y: number, texture: string, frame?: string | number) {
-    let sprite = new Faune(this.scene, x, y, texture, frame);
+    let sprite = new Faune(this.scene as BaseDungeonScene, x, y, texture, frame);
 
     this.displayList.add(sprite);
     this.updateList.add(sprite);

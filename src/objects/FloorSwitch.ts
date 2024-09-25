@@ -1,6 +1,7 @@
 import Phaser from "phaser";
 import { FloorSwitchStateMachine } from "../stateMachine/FloorSwitchStateMachine";
 import Faune from "../characters/Faune";
+import { BaseDungeonScene } from "../scenes/BaseDungeonScene";
 
 enum TiledProperties {
     PRESS_EVENT = "pressEvent",
@@ -77,9 +78,10 @@ export default class FloorSwitch extends Phaser.Physics.Arcade.Sprite {
     init(player: Faune, tiledObject: Phaser.Types.Tilemaps.TiledObject) {
         this.player = player;
         this.fsName = tiledObject.name;
+
         tiledObject.properties.forEach((prop: any, index: number) => {
-            //console.error(index);
-            //console.error(prop["name"]);
+            
+            console.error(prop);
             if (prop["name"] === TiledProperties.PRESS_EVENT)
                 this.pressEvent = prop["value"];
             if (prop["name"] === TiledProperties.RELEASE_EVENT)
