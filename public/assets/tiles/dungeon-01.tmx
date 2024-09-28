@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.11.0" orientation="orthogonal" renderorder="right-down" width="100" height="100" tilewidth="16" tileheight="16" infinite="0" nextlayerid="6" nextobjectid="8">
+<map version="1.10" tiledversion="1.11.0" orientation="orthogonal" renderorder="right-down" width="100" height="100" tilewidth="16" tileheight="16" infinite="0" nextlayerid="6" nextobjectid="9">
  <editorsettings>
   <export target="dungeon-01.json" format="json"/>
  </editorsettings>
@@ -935,11 +935,20 @@
 </data>
  </layer>
  <objectgroup id="5" name="FloorSwitches">
-  <object id="7" name="FloorSwitchOpenChest" gid="56" x="79.6667" y="109.333" width="16" height="16">
+  <object id="7" name="FloorSwitchOpenChest" gid="56" x="80" y="112" width="16" height="16">
    <properties>
     <property name="OpenChest" type="object" value="3"/>
     <property name="pressEvent" value="FloorSwitchOpenChestPressed"/>
     <property name="releaseEvent" value="FloorSwitchOpenChestReleased"/>
+    <property name="staysPressed" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="8" name="FloorSwitchOpenChest" gid="56" x="151.667" y="146" width="16" height="16">
+   <properties>
+    <property name="OpenChest" type="object" value="1"/>
+    <property name="pressEvent" value="FloorSwitchOpenChestPressed"/>
+    <property name="releaseEvent" value="FloorSwitchOpenChestReleased"/>
+    <property name="staysPressed" type="bool" value="false"/>
    </properties>
   </object>
  </objectgroup>

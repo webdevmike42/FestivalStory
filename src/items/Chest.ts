@@ -9,14 +9,16 @@ enum TiledProperties {
 }
 
 export default class Chest extends Phaser.Physics.Arcade.Sprite {
+    private readonly _chestId: string = GameManager.generateUID();
+    public get chestId(): string {
+        return this._chestId;
+    }
+
     private _stateMachine: ChestStateMachine;
-    private _chestName: string;
     public get chestName(): string {
-        return this._chestName;
+        return this.tiledObject.name;
     }
-    public set chestName(value: string) {
-        this._chestName = value;
-    }
+   
     private _coins: number;
     public get coins(): number {
         return this._coins;
@@ -33,16 +35,16 @@ export default class Chest extends Phaser.Physics.Arcade.Sprite {
         this._player = value;
     }
 
-    private _tiledProperties: any[];
-    public get tiledProperties(): any[] {
-        return this._tiledProperties;
+    public get tiledId(): number {
+        return this.tiledObject.id;
     }
-    public set tiledProperties(value: any[]) {
-        this._tiledProperties = value;
+    
+    private _tiledObject: Phaser.Types.Tilemaps.TiledObject;
+    public get tiledObject(): Phaser.Types.Tilemaps.TiledObject {
+        return this._tiledObject;
     }
-    private readonly _chestId: string = GameManager.generateUID();
-    public get chestId(): string {
-        return this._chestId;
+    public set tiledObject(value: Phaser.Types.Tilemaps.TiledObject) {
+        this._tiledObject = value;
     }
 
     constructor(scene: Phaser.Scene, x: number, y: number, texture: string, frame?: string | number) {
@@ -65,9 +67,8 @@ export default class Chest extends Phaser.Physics.Arcade.Sprite {
     }
 
     init(player: Faune, tiledObject: Phaser.Types.Tilemaps.TiledObject) {
-
         this.player = player;
-        this.chestName = tiledObject.name;
+        this.tiledObject = tiledObject;
         /*
         tiledObject.properties.forEach((prop: any, index: number) => {
             //console.error(index);

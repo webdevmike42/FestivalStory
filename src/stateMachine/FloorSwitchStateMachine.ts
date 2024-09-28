@@ -1,6 +1,7 @@
 import { sceneEvents } from "../events/EventCenter";
-import { EventManager } from "../events/EventManager";
+import { EventManager, GAME_EVENTS } from "../events/EventManager";
 import FloorSwitch from "../objects/FloorSwitch";
+import { BaseDungeonScene } from "../scenes/BaseDungeonScene";
 import StateMachine from "./StateMachine";
 
 type FloorSwitchStates = "pressed" | "released"
@@ -39,6 +40,12 @@ export class FloorSwitchStateMachine extends StateMachine<FloorSwitchStates>{
                 console.log('FS enters pressed state');
                 sceneEvents.emit(this._floorSwitch.pressEvent, this._floorSwitch);
                 this.floorSwitch.anims.play('chest-open', true);
+
+
+                const chest = (this.floorSwitch.scene as BaseDungeonScene).getChestByTiledId(this.floorSwitch.opensChestTiledId);
+                if (chest) {
+                    EventManager.emit(GAME_EVENTS.PLAYER_ATTEMPT_OPEN_CHEST + chest.chestId, chest, this.floorSwitch.player);
+                }
             },
             exit: () => {
                 console.log('FS exits pressed state');

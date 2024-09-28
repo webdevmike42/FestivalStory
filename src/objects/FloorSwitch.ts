@@ -5,18 +5,30 @@ import { BaseDungeonScene } from "../scenes/BaseDungeonScene";
 
 enum TiledProperties {
     PRESS_EVENT = "pressEvent",
-    RELEASE_EVENT = "releaseEvent"
+    RELEASE_EVENT = "releaseEvent",
+    OPEN_CHEST = "OpenChest",
+    STAYS_PRESSED = "staysPressed"
 }
 
 export default class FloorSwitch extends Phaser.Physics.Arcade.Sprite {
     private _stateMachine: FloorSwitchStateMachine;
     private _staysPressed = false;
+
+    public get tiledId(): number {
+        return this.tiledObject.id;
+    }
+
+    private _tiledObject: Phaser.Types.Tilemaps.TiledObject;
+    public get tiledObject(): Phaser.Types.Tilemaps.TiledObject {
+        return this._tiledObject;
+    }
+    public set tiledObject(value: Phaser.Types.Tilemaps.TiledObject) {
+        this._tiledObject = value;
+    }
+
     private _fsName: string;
     public get fsName(): string {
-        return this._fsName;
-    }
-    public set fsName(value: string) {
-        this._fsName = value;
+        return this.tiledObject.name;
     }
 
     public get staysPressed() {
@@ -58,6 +70,14 @@ export default class FloorSwitch extends Phaser.Physics.Arcade.Sprite {
         this._player = value;
     }
 
+    private _opensChestTiledId: number;
+    public get opensChestTiledId(): number {
+        return this._opensChestTiledId;
+    }
+    public set opensChestTiledId(value: number) {
+        this._opensChestTiledId = value;
+    }
+
     constructor(scene: Phaser.Scene, x: number, y: number, texture: string, frame?: string | number) {
         super(scene, x, y, texture, frame);
     }
@@ -77,15 +97,17 @@ export default class FloorSwitch extends Phaser.Physics.Arcade.Sprite {
 
     init(player: Faune, tiledObject: Phaser.Types.Tilemaps.TiledObject) {
         this.player = player;
-        this.fsName = tiledObject.name;
+        this.tiledObject = tiledObject;
 
         tiledObject.properties.forEach((prop: any, index: number) => {
-            
-            console.error(prop);
             if (prop["name"] === TiledProperties.PRESS_EVENT)
                 this.pressEvent = prop["value"];
             if (prop["name"] === TiledProperties.RELEASE_EVENT)
                 this.releaseEvent = prop["value"];
+            if (prop["name"] === "OpenChest")
+                this.opensChestTiledId = prop["value"];
+            if (prop["name"] === TiledProperties.STAYS_PRESSED)
+                this.staysPressed = prop["value"];
         });
     }
 }

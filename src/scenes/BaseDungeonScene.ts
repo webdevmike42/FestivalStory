@@ -6,6 +6,7 @@ import FloorSwitch from "../objects/FloorSwitch";
 import { GameManager } from "../utils/GameManager";
 import { EventManager, GAME_EVENTS } from "../events/EventManager";
 import { debugDraw } from "../utils/debug";
+import { TiledConverter } from "../utils/TiledConverter";
 
 export class BaseDungeonScene extends Phaser.Scene {
     private _player: Faune;
@@ -20,7 +21,13 @@ export class BaseDungeonScene extends Phaser.Scene {
     tileset: Phaser.Tilemaps.Tileset | null;
     enemies: Phaser.Physics.Arcade.Group;
     playerEnemyCollider: Phaser.Physics.Arcade.Collider;
-    floorSwitches: Phaser.Physics.Arcade.Group;
+    private _floorSwitches: Phaser.Physics.Arcade.StaticGroup;
+    public get floorSwitches(): Phaser.Physics.Arcade.StaticGroup {
+        return this._floorSwitches;
+    }
+    public set floorSwitches(value: Phaser.Physics.Arcade.StaticGroup) {
+        this._floorSwitches = value;
+    }
     private _chests: Phaser.Physics.Arcade.StaticGroup;
     public get chests(): Phaser.Physics.Arcade.StaticGroup {
         return this._chests;
@@ -66,32 +73,8 @@ export class BaseDungeonScene extends Phaser.Scene {
                 debugDraw(wallsLayer, this);
             }
 
-            this.chests = this.physics.add.staticGroup({
-                classType: Chest
-            })
-
-            const chestLayer: Phaser.Tilemaps.ObjectLayer | null = this.tilemap.getObjectLayer("Chests");
-            chestLayer?.objects.forEach(chestObj => {
-                if (chestObj) {
-                    // correct x and y because origin is in the middle of the object
-                    const chest: Chest = this.chests.get(chestObj.x! + chestObj.width! * 0.5, chestObj.y! - chestObj.height! * 0.5, "treasure");
-                    chest.init(this.player, chestObj);
-                }
-            });
-
-            this.floorSwitches = this.physics.add.group({
-                classType: FloorSwitch
-            });
-
-            const floorSwitchLayer: Phaser.Tilemaps.ObjectLayer | null = this.tilemap.getObjectLayer("FloorSwitches");
-            floorSwitchLayer?.objects.forEach(fsObj => {
-                if (fsObj) {
-                    console.error(fsObj);
-                    // correct x and y because origin is in the middle of the object
-                    const fs: FloorSwitch = this.floorSwitches.get(fsObj.x! + fsObj.width! * 0.5, fsObj.y! - fsObj.height! * 0.5, "treasure");
-                    fs.init(this.player, fsObj);
-                }
-            });
+            this.chests = TiledConverter.convertChestLayer(this.tilemap, this, this.player);
+            this.floorSwitches = TiledConverter.convertFloorSwitchLayer(this.tilemap, this, this.player);
 
             const lizards = this.physics.add.group({
                 classType: Lizard,
@@ -214,9 +197,13 @@ export class BaseDungeonScene extends Phaser.Scene {
 
     getObjectsByType<T>(type: new (...args: any[]) => T): T[] {
         return this.children.getChildren().filter((go) => go instanceof type) as T[];
-      }
+    }
 
     getChests(): Chest[] {
         return this.getObjectsByType(Chest);
+    }
+
+    getChestByTiledId(tiledId: number): Chest | undefined {
+        return this.getChests().find(chest => chest.tiledId === tiledId);
     }
 }

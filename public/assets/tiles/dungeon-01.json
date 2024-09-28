@@ -249,13 +249,51 @@
                          "name":"releaseEvent",
                          "type":"string",
                          "value":"FloorSwitchOpenChestReleased"
+                        }, 
+                        {
+                         "name":"staysPressed",
+                         "type":"bool",
+                         "value":true
                         }],
                  "rotation":0,
                  "type":"",
                  "visible":true,
                  "width":16,
-                 "x":79.6667,
-                 "y":109.333
+                 "x":80,
+                 "y":112
+                }, 
+                {
+                 "gid":56,
+                 "height":16,
+                 "id":8,
+                 "name":"FloorSwitchOpenChest",
+                 "properties":[
+                        {
+                         "name":"OpenChest",
+                         "type":"object",
+                         "value":1
+                        }, 
+                        {
+                         "name":"pressEvent",
+                         "type":"string",
+                         "value":"FloorSwitchOpenChestPressed"
+                        }, 
+                        {
+                         "name":"releaseEvent",
+                         "type":"string",
+                         "value":"FloorSwitchOpenChestReleased"
+                        }, 
+                        {
+                         "name":"staysPressed",
+                         "type":"bool",
+                         "value":false
+                        }],
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":16,
+                 "x":151.666666666667,
+                 "y":146
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -298,7 +336,7 @@
                  "id":3,
                  "name":"NamedChest",
                  "rotation":0,
-                 "type":"Chest",
+                 "type":"",
                  "visible":true,
                  "width":16,
                  "x":160,
@@ -334,7 +372,7 @@
          "y":0
         }],
  "nextlayerid":6,
- "nextobjectid":8,
+ "nextobjectid":9,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"1.11.0",

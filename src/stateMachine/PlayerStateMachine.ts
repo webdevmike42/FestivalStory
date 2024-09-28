@@ -2,9 +2,6 @@ import Faune from "../characters/Faune";
 import { isAnyMovementKeyDown } from "../controller/MappedInputController";
 import { EventManager, GAME_EVENTS } from "../events/EventManager";
 import Chest, { getChestByName } from "../items/Chest";
-import FloorSwitch from "../objects/FloorSwitch";
-import { BaseDungeonScene } from "../scenes/BaseDungeonScene";
-import { getNearestOverlappingChest } from "../utils/GameObjectDetectionHelper";
 import StateMachine from "./StateMachine";
 
 type PlayerStates = "idle" | "walk" | "attack" | "damage" | "dead";
@@ -69,7 +66,6 @@ export class PlayerStateMachine extends StateMachine<PlayerStates>{
                         }
                     });
 
-                    // once kann auch weiter unten stehen
                     gScene.physics.world.once('worldstep', () => {
                         if (nearestChest) {
                             console.error(nearestChest);
